@@ -24,8 +24,41 @@ This project demonstrates a gRPC service with both gRPC and HTTP/REST endpoints 
 - grpcurl (for testing gRPC endpoints)
 - curl (for testing HTTP endpoints)
 - grpcui (for interactive gRPC testing)
+- Protocol Buffers compiler (protoc)
 
 ## Setup and Running
+
+### Generate Python Code from Proto Files
+
+Before running the server, you need to generate the Python code from the Protocol Buffer definition:
+
+1. Install the Protocol Buffers compiler (protoc):
+   ```bash
+   # Mac
+   brew install protobuf
+
+   # Ubuntu/Debian
+   apt-get install protobuf-compiler
+
+   # CentOS/RHEL
+   yum install protobuf-compiler
+   ```
+
+2. Generate Python files:
+   ```bash
+   # From project root
+   python -m grpc_tools.protoc \
+       --proto_path=protos/ \
+       --python_out=protos/ \
+       --grpc_python_out=protos/ \
+       protos/services.proto
+   ```
+
+This will generate two files in the `protos` directory:
+- `services_pb2.py`: Contains message classes
+- `services_pb2_grpc.py`: Contains gRPC service classes
+
+Note: You need to regenerate these files whenever you modify the `services.proto` file.
 
 ### Local Development
 
