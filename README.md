@@ -26,7 +26,12 @@ This project demonstrates a gRPC service with both gRPC and HTTP/REST endpoints 
 - grpcui (for interactive gRPC testing)
 - Protocol Buffers compiler (protoc)
 
-## Setup and Running
+## Proto Files Management
+
+### Source Control
+- Only commit the source `.proto` files
+- DO NOT commit generated files (`*_pb2.py`, `*_pb2_grpc.py`)
+- Generated files should be created locally in each environment
 
 ### Generate Python Code from Proto Files
 
@@ -60,6 +65,8 @@ This will generate two files in the `protos` directory:
 
 Note: You need to regenerate these files whenever you modify the `services.proto` file.
 
+## Setup and Running
+
 ### Local Development
 
 1. Install dependencies:
@@ -89,6 +96,128 @@ This will start:
    ```bash
    podman run -p 50051:50051 -p 8080:8080 --name grpc-server-container grpc-server
    ```
+
+## Frontend Integration Options
+
+### 1. Node.js Frontend
+
+You can create a Node.js frontend using either the gRPC or HTTP endpoints:
+
+#### Using gRPC directly:
+1. Install required packages:
+   ```bash
+   npm install @grpc/grpc-js @grpc/proto-loader
+   ```
+
+2. Generate JavaScript code from proto:
+   ```bash
+   grpc_tools_node_protoc \
+       --js_out=import_style=commonjs,binary:./src \
+       --grpc_out=grpc_js:./src \
+       --proto_path=../protos \
+       ../protos/services.proto
+   ```
+
+3. Example React/Node.js client:
+   ```javascript
+   const grpc = require('@grpc/grpc-js');
+   const protoLoader = require('@grpc/proto-loader');
+
+   const PROTO_PATH = '../protos/services.proto';
+   const packageDefinition = protoLoader.loadSync(PROTO_PATH);
+   const services = grpc.loadPackageDefinition(packageDefinition);
+
+   const client = new services.Greeter('localhost:50051', grpc.credentials.createInsecure());
+
+   // Make gRPC call
+   client.sayHello({ name: 'World' }, (err, response) => {
+     console.log(response.message);
+   });
+   ```
+
+#### Using HTTP Gateway:
+1. Simple fetch request:
+   ```javascript
+   // GET request
+   fetch('http://localhost:8080/hello?name=World')
+     .then(response => response.json())
+     .then(data => console.log(data));
+
+   // POST request
+   fetch('http://localhost:8080/hello', {
+     method: 'POST',
+     headers: { 'Content-Type': 'application/json' },
+     body: JSON.stringify({ name: 'World' })
+   })
+     .then(response => response.json())
+     .then(data => console.log(data));
+   ```
+
+### 2. FastAPI Frontend
+
+You can create a FastAPI frontend that communicates with the gRPC server:
+
+1. Install FastAPI and dependencies:
+   ```bash
+   pip install fastapi uvicorn jinja2
+   ```
+
+2. Example FastAPI application:
+   ```python
+   from fastapi import FastAPI, Request
+   from fastapi.templating import Jinja2Templates
+   import grpc
+   from protos import services_pb2, services_pb2_grpc
+
+   app = FastAPI()
+   templates = Jinja2Templates(directory="templates")
+
+   # Create gRPC channel
+   channel = grpc.insecure_channel('localhost:50051')
+   stub = services_pb2_grpc.GreeterStub(channel)
+
+   @app.get("/")
+   async def home(request: Request):
+       return templates.TemplateResponse(
+           "index.html",
+           {"request": request}
+       )
+
+   @app.post("/greet")
+   async def greet(name: str):
+       response = stub.SayHello(services_pb2.HelloRequest(name=name))
+       return {"message": response.message}
+   ```
+
+3. Example template (`templates/index.html`):
+   ```html
+   <!DOCTYPE html>
+   <html>
+   <head>
+       <title>gRPC Greeter</title>
+   </head>
+   <body>
+       <h1>gRPC Greeter</h1>
+       <input type="text" id="name" placeholder="Enter name">
+       <button onclick="greet()">Greet</button>
+       <div id="result"></div>
+
+       <script>
+       async function greet() {
+           const name = document.getElementById('name').value;
+           const response = await fetch('/greet?name=' + name);
+           const data = await response.json();
+           document.getElementById('result').textContent = data.message;
+       }
+       </script>
+   </body>
+   </html>
+   ```
+
+Choose the frontend option that best fits your needs:
+- Node.js: Good for complex SPAs, rich UI frameworks available
+- FastAPI: Good for Python-centric development, simple setup
+- HTTP Gateway: Use any frontend framework, simpler integration
 
 ## Testing the Service
 
@@ -190,4 +319,4 @@ podman rm grpc-server-container
 ### Remove dangling images:
 ```bash
 podman image prune -f
-``` 
+```
