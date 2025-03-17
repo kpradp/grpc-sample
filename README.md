@@ -23,6 +23,7 @@ This project demonstrates a gRPC service with both gRPC and HTTP/REST endpoints 
 - Podman or Docker
 - grpcurl (for testing gRPC endpoints)
 - curl (for testing HTTP endpoints)
+- grpcui (for interactive gRPC testing)
 
 ## Setup and Running
 
@@ -57,6 +58,31 @@ This will start:
    ```
 
 ## Testing the Service
+
+### Interactive gRPC Testing (using gRPCUI)
+
+gRPCUI provides a web interface for interacting with gRPC services, making it easier to test your endpoints.
+
+1. Install gRPCUI:
+   ```bash
+   # Mac
+   brew install grpcui
+
+   # Linux
+   go install github.com/fullstorydev/grpcui/cmd/grpcui@latest
+   ```
+
+2. Start the gRPCUI web interface:
+   ```bash
+   grpcui -plaintext localhost:50051
+   ```
+
+This will open a web browser with an interactive UI where you can:
+- View all available gRPC services and methods
+- Create and send requests with a form interface
+- See detailed request and response messages
+- View real-time API documentation
+- Test streaming endpoints
 
 ### gRPC Testing (using grpcurl)
 
@@ -93,7 +119,28 @@ This will start:
 - Example requests
 
 ### gRPC Reflection
-The server supports gRPC reflection, allowing tools like grpcurl to discover available services and methods automatically.
+The server supports gRPC reflection, allowing tools like grpcurl and gRPCUI to discover available services and methods automatically.
+
+### Testing Tools Comparison
+
+1. **gRPCUI**
+   - Web-based interactive interface
+   - Best for development and testing
+   - Visual form-based request builder
+   - Real-time API documentation
+   - Support for streaming endpoints
+
+2. **grpcurl**
+   - Command-line tool
+   - Good for automation and scripts
+   - Quick service inspection
+   - Lightweight and fast
+
+3. **Swagger UI**
+   - Web-based REST API documentation
+   - HTTP/REST endpoint testing
+   - OpenAPI specification
+   - Easy to share with team members
 
 ## Container Management
 
