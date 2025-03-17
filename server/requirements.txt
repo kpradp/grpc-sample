@@ -1,0 +1,6 @@
+grpcio==1.54.0
+grpcio-tools==1.54.0
+protobuf==4.21.6
+grpcio-reflection==1.54.0
+aiohttp==3.8.1
+aiohttp-swagger==1.0.16

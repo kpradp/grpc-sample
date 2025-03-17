@@ -1,0 +1,82 @@
+openapi: 3.0.0
+info:
+  title: Greeter Service HTTP API
+  description: HTTP Gateway for the gRPC Greeter Service
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8080
+    description: Local development server
+
+paths:
+  /hello:
+    get:
+      summary: Say Hello (GET)
+      description: Returns a greeting message for the provided name
+      parameters:
+        - name: name
+          in: query
+          description: Name of the person to greet
+          required: false
+          schema:
+            type: string
+            default: "pp"
+      responses:
+        '200':
+          description: Successful greeting response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GreetingResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    
+    post:
+      summary: Say Hello (POST)
+      description: Returns a greeting message for the provided name in request body
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: Name of the person to greet
+                  default: "pp"
+      responses:
+        '200':
+          description: Successful greeting response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GreetingResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    GreetingResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          description: The greeting message
+          example: "Hello, pp!"
+    
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error message
+          example: "Internal server error" 
